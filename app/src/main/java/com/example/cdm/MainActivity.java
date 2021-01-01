@@ -3,11 +3,13 @@ package com.example.cdm;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -31,7 +33,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent mintent = new Intent(MainActivity.this,Login.class);
-                mAuth.signOut();
+                SharedPreferences pref = getSharedPreferences("user_details", MODE_PRIVATE);
+                if(pref.contains("Email")){
+                    SharedPreferences.Editor editor = pref.edit();
+                    editor.clear();
+                    editor.apply();
+                    finish();
+                    LoginManager.getInstance().logOut();
+                }
+                else{
+
+                    mAuth.signOut();
+                }
                 startActivity(mintent);
                 finish();
             }
@@ -42,11 +55,12 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
-
-        if(currentUser == null)
+        SharedPreferences pref = getSharedPreferences("user_details", MODE_PRIVATE);
+        if(currentUser == null && !pref.contains("Email"))
         {
             Intent login = new Intent(MainActivity.this,Login.class);
             startActivity(login);
+            finish();
         }
         else
         {
@@ -56,30 +70,37 @@ public class MainActivity extends AppCompatActivity {
     }
     private void CheckUserExistence()
     {
-        final String current_user_id = mAuth.getCurrentUser().getUid();
+        final SharedPreferences preferences = getSharedPreferences("user_details", MODE_PRIVATE);
+        final String username = preferences.getString("Username",null);
 
-        Toast.makeText(MainActivity.this,current_user_id,Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this,username,Toast.LENGTH_SHORT).show();
         //  Toast.makeText(MainActivity.this,current_user_id,Toast.LENGTH_SHORT).show();
         if(userref==null)
         {
             Toast.makeText(MainActivity.this,"Enter Your Data",Toast.LENGTH_SHORT).show();
             Intent Registration = new Intent(MainActivity.this,Registration.class);
+            Registration.putExtra("Email",preferences.getString("Email",null));
+            Registration.putExtra("Username",preferences.getString("Username",null));
+            Registration.putExtra("Name",preferences.getString("Name",null));
+            Registration.putExtra("Image",preferences.getString("Image",null));
             startActivity(Registration);
+            finish();
         }
         userref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)
             {
-                if(dataSnapshot.hasChild(current_user_id))
-                {
-                     Toast.makeText(MainActivity.this,"Welcome to Robbinhood Army",Toast.LENGTH_SHORT).show();
 
-                }
-                else
+                if(!dataSnapshot.hasChild(username))
                 {
                     Toast.makeText(MainActivity.this,"Enter Your Data",Toast.LENGTH_SHORT).show();
                     Intent Registration = new Intent(MainActivity.this,Registration.class);
+                    Registration.putExtra("Email",preferences.getString("Email",null));
+                    Registration.putExtra("Username",preferences.getString("Username",null));
+                    Registration.putExtra("Name",preferences.getString("Name",null));
+                    Registration.putExtra("Image",preferences.getString("Image",null));
                     startActivity(Registration);
+                    finish();
                 }
             }
 

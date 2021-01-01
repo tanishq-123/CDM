@@ -55,6 +55,7 @@ public class Registration extends AppCompatActivity {
     private Button mButtonRegister;
     String currentuserid;
     private FirebaseAuth mAuth;
+    private String email,image,username,name;
     private LocationManager locationManager;
     private LocationListener locationListener;
     private Location location;
@@ -70,18 +71,45 @@ public class Registration extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Bundle extras = getIntent().getExtras();
         setContentView(R.layout.activity_registration);
         mTextPhno = findViewById(R.id.uphno);
         mname = findViewById(R.id.uname);
         mUsername = findViewById(R.id.uuid);
         profile = (CircularImageView) findViewById(R.id.profilepic);
+
         mlocationbtn = findViewById(R.id.getLoction);
         mButtonRegister = findViewById(R.id.ureg);
         memail = findViewById(R.id.uemail);
+
         //codePicker = findViewById(R.id.ccp);
+        if (extras != null) {
+            image = extras.getString("Image");
+            Toast.makeText(Registration.this, image, Toast.LENGTH_SHORT).show();
+            name=extras.getString("Name");
+            username=extras.getString("Username");
+            userref = FirebaseDatabase.getInstance().getReference().child("User").child(username);
+            email=extras.getString("Email");
+            CheckUserExistence(username);
+            memail.setText(email);
+            mUsername.setText(username);
+            mname.setText(name);
+            HashMap <String,String> hashMap = new HashMap<>();
+            hashMap.put("Profile",image);
+            userref.setValue(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(Registration.this, "Profile Image stored to Firebase Database Successfully...", Toast.LENGTH_SHORT).show();
+                    loadingbar.dismiss();
+
+                }
+            });
+            Toast.makeText(Registration.this, image, Toast.LENGTH_SHORT).show();
+        }
         mAuth = FirebaseAuth.getInstance();
-        currentuserid = mAuth.getCurrentUser().getUid();
-        userref = FirebaseDatabase.getInstance().getReference().child("User").child(currentuserid);
+       // currentuserid = mAuth.getCurrentUser().getUid();
+        email = memail.getText().toString();
+
         tokenref = FirebaseDatabase.getInstance().getReference().child("Tokens");
         UserProfileImageRef = FirebaseStorage.getInstance().getReference().child("Profile Images");
         loadingbar = new ProgressDialog(this);
@@ -148,6 +176,7 @@ public class Registration extends AppCompatActivity {
 
                                 Intent movetomain = new Intent(Registration.this,MainActivity.class);
                                 startActivity(movetomain);
+                                finish();
                                 loadingbar.dismiss();
                             }
                             else
@@ -182,6 +211,7 @@ public class Registration extends AppCompatActivity {
                     if (dataSnapshot.hasChild("Profile"))
                     {
                         String image = dataSnapshot.child("Profile").getValue().toString();
+                        Toast.makeText(Registration.this,image,Toast.LENGTH_SHORT).show();
                         Picasso.get().load(image).into(profile);
                     }
                     else
@@ -227,9 +257,9 @@ public class Registration extends AppCompatActivity {
                 loadingbar.setCanceledOnTouchOutside(true);
 
                 Uri resultUri = result.getUri();
-
-                final StorageReference filePath = UserProfileImageRef.child(currentuserid + ".jpg");
-
+                Toast.makeText(this,username,Toast.LENGTH_SHORT).show();
+                final StorageReference filePath = UserProfileImageRef.child(username + ".jpg");
+                Toast.makeText(this,filePath.getPath(),Toast.LENGTH_SHORT).show();
                 filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onComplete(@NonNull final Task<UploadTask.TaskSnapshot> task)
@@ -265,7 +295,7 @@ public class Registration extends AppCompatActivity {
         }
     }
     private void getlocation() {
-        userref = FirebaseDatabase.getInstance().getReference().child("User").child(currentuserid);
+        userref = FirebaseDatabase.getInstance().getReference().child("User").child(username);
         loadingbar = new ProgressDialog(this);
         fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
             @Override
@@ -303,5 +333,40 @@ public class Registration extends AppCompatActivity {
 
             }
         });
+    }
+    private void CheckUserExistence(final String image)
+    {
+
+        Toast.makeText(Registration.this,image,Toast.LENGTH_SHORT).show();
+        //  Toast.makeText(MainActivity.this,current_user_id,Toast.LENGTH_SHORT).show();
+        if(userref==null)
+        {
+            Toast.makeText(Registration.this,"Enter Your Data",Toast.LENGTH_SHORT).show();
+        }
+       else{
+            userref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot)
+                {
+                    if(dataSnapshot.hasChild(image))
+                    {
+                        Toast.makeText(Registration.this,"Together we can!",Toast.LENGTH_SHORT).show();
+                        Intent toMain = new Intent(Registration.this,MainActivity.class);
+                        startActivity(toMain);
+                        finish();
+                    }
+                    else
+                    {
+                        Toast.makeText(Registration.this,"Enter Your Data",Toast.LENGTH_SHORT).show();
+
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Toast.makeText(Registration.this,"Error ",Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 }
