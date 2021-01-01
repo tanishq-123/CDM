@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Register"
+    tools:context=".Registration"
     android:background="@color/register_bk_color"
     android:focusableInTouchMode="true"
     android:gravity="center"
@@ -29,12 +29,13 @@
                     android:layout_alignParentLeft="true"
                     style="@style/viewParent.headerText.NoMode"
                     android:textColor="@color/whiteTextColor"
-                    android:text="Here’s\nyour first\nstep with \nus! "/>
+                    android:text="Complete \nYour \nProfile"/>
 
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_login_hero"
+                <com.mikhaellopez.circularimageview.CircularImageView
+                    android:id="@+id/profilepic"
+                    android:layout_width="150dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/profilepic"
                     android:layout_alignParentTop="true"
                     android:layout_alignParentRight="true"/>
             </RelativeLayout>
@@ -55,11 +56,22 @@
 
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/textInputEmail1"
+                        style="@style/parent"
+                        android:layout_marginTop="@dimen/loginViewsMargin">
+                        <EditText
+                            android:id="@+id/uname"
+                            style="@style/modifiedEditText"
+                            android:inputType="textEmailAddress"
+                            android:maxLines="1"
+                            android:hint="Name"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/textInputEmail"
                         style="@style/parent"
                         android:layout_marginTop="@dimen/loginViewsMargin">
                         <EditText
-                            android:id="@+id/remail"
+                            android:id="@+id/uemail"
                             style="@style/modifiedEditText"
                             android:inputType="textEmailAddress"
                             android:maxLines="1"
@@ -70,11 +82,11 @@
                         style="@style/parent"
                         android:layout_marginTop="@dimen/loginViewsMargin">
                         <EditText
-                            android:id="@+id/rpass"
+                            android:id="@+id/uuid"
                             style="@style/modifiedEditText"
-                            android:inputType="textPassword"
+                            android:inputType="textEmailAddress"
                             android:maxLines="1"
-                            android:hint="Password"/>
+                            android:hint="Userid"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -82,15 +94,28 @@
                         style="@style/parent"
                         android:layout_marginTop="@dimen/loginViewsMargin">
                         <EditText
-                            android:id="@+id/rcpass"
+                            android:id="@+id/uphno"
                             style="@style/modifiedEditText"
-                            android:hint="Confirm Password"
+                            android:hint="PhoneNo."
                             android:maxLines="1"
                             android:inputType="textEmailAddress"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <br.com.simplepass.loading_button_lib.customViews.CircularProgressButton
-                        android:id="@+id/cirRegisterButton"
+                        android:id="@+id/getLoction"
+                        style="@style/loginButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="@dimen/loginViewsMargin"
+                        android:text="get Location"
+                        app:initialCornerAngle="27dp"
+                        app:spinning_bar_color="#FFF"
+                        app:spinning_bar_padding="6dp"
+                        app:spinning_bar_width="4dp" />
+
+                    <br.com.simplepass.loading_button_lib.customViews.CircularProgressButton
+                        android:id="@+id/ureg"
                         style="@style/loginButton"
                         app:spinning_bar_width="4dp"
                         app:spinning_bar_color="#FFF"
@@ -100,65 +125,9 @@
                         app:initialCornerAngle="27dp"
                         app:spinning_bar_padding="6dp"/>
 
-                    <TextView
-                        style="@style/parent"
-                        android:textAlignment="center"
-                        android:textStyle="bold"
-                        android:textColor="@color/themeColor"
-                        android:textSize="17sp"
-                        android:text="Already have an account?"
-                        android:layout_marginTop="@dimen/loginViewsMargin"
-                       />
-
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:weightSum="12"
-                android:gravity="center"
-                android:layout_marginTop="30dp">
 
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="1dp"
-                    android:background="@color/whiteTextColor"
-                    android:layout_weight="3"/>
-
-                <TextView
-                    style="@style/viewParent.headerText.NoMode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/whiteTextColor"
-                    android:text="Use other Methods"
-                    android:layout_weight="6"
-                    android:textSize="12sp"
-                    android:textAlignment="center"/>
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="1dp"
-                    android:background="@color/whiteTextColor"
-                    android:layout_weight="3"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="30dp">
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_facebook"/>
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_google_plus"
-                    android:layout_marginLeft="10dp"/>
-            </LinearLayout>
 
 
         </LinearLayout>

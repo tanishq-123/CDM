@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -16,6 +17,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthProvider;
 
 public class Register extends AppCompatActivity {
@@ -85,7 +87,7 @@ public class Register extends AppCompatActivity {
                                     {
                                         Toast.makeText(Register.this, "your are authentication sucessfully", Toast.LENGTH_SHORT).show();
                                         loadingbar.dismiss();
-                                        //SendEmailVerifiaction();
+                                        SendEmailVerifiaction();
                                     }
                                     else
                                     {
@@ -101,5 +103,29 @@ public class Register extends AppCompatActivity {
             }
         });
 
+    }
+    private  void SendEmailVerifiaction()
+    {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if(user!=null)
+        {
+            user.sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if(task.isSuccessful())
+                    {
+                        mAuth.signOut();
+                        Toast.makeText(Register.this,"Your Registration is Sucessfull Please Verify Your Email id...",Toast.LENGTH_SHORT).show();
+                        Intent loginintent = new Intent(Register.this,Login.class);
+                        startActivity(loginintent);
+                    }
+                    else
+                    {
+                        String  meaasge = task.getException().getMessage().toString();
+                        Toast.makeText(Register.this,"Error !"+meaasge,Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
     }
 }
