@@ -43,7 +43,7 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:26.2.0')
     implementation 'com.mikhaellopez:circularimageview:4.2.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
-    implementation 'com.facebook.android:facebook-login:4.30.0'
-    implementation 'com.google.android.gms:play-services-location:17.0.0'
+    implementation 'com.facebook.android:facebook-android-sdk:[8,9)'
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
 
 }
