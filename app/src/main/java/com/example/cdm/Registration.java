@@ -18,6 +18,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -90,6 +91,7 @@ public class Registration extends AppCompatActivity {
             Toast.makeText(Registration.this, image, Toast.LENGTH_SHORT).show();
             name=extras.getString("Name");
             username=extras.getString("Username");
+            Log.v("Abc",username);
             userref = FirebaseDatabase.getInstance().getReference().child("User").child(username);
             email=extras.getString("Email");
             CheckUserExistence(username);

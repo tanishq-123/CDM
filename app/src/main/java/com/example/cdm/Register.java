@@ -2,15 +2,12 @@ package com.example.cdm;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -125,7 +122,7 @@ public class Register extends AppCompatActivity {
             }
         });
         callbackManager= CallbackManager.Factory.create();
-        mFblogin.setPermissions(Arrays.asList("email","public_profile"));
+        mFblogin.setReadPermissions(Arrays.asList("email","public_profile"));
         mFblogin.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -190,54 +187,36 @@ public class Register extends AppCompatActivity {
                 if(error!=null) Toast.makeText(Register.this,error.getErrorMessage().toString(),Toast.LENGTH_LONG).show();
                 else{
                     try {
-                        final String urltoimage = response.getJSONObject()
-                                .getJSONObject("picture")
-                                .getJSONObject("data")
-                                .getString("url");
-                        final String first_name=object
+                        String first_name=object
                                 .getString("first_name");
-                        final String last_name=object
+                        String last_name=object
                                 .getString("last_name");
-                        AlertDialog.Builder builder = new AlertDialog.Builder(Register.this);
-                        builder.setTitle("Enter your mail id to continue");
-
-                        final Intent i = new Intent(Register.this, Registration.class);
-                        final SharedPreferences.Editor editor = getSharedPreferences("user_details", MODE_PRIVATE).edit();
-
-                        final EditText input = new EditText(Register.this);
-                        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-                        builder.setView(input);
-
-                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {String emailS = input.getText().toString();
-
-                                String username=emailS.replaceAll("[-+.^:,@]","");
-                                i.putExtra("Username", username);
-                                i.putExtra("Email", emailS);
-                                editor.putString("Email", emailS);
-                                editor.putString("Username",username);
-
-                                i.putExtra("Image", urltoimage);
-                                i.putExtra("Name",first_name+" "+last_name);
-
-                                editor.putString("Image",urltoimage);
-                                editor.putString("Name",first_name+" "+last_name);
-                                editor.apply();
-
-                                startActivity(i);
-                                finish();
-                            }
-                        });
-                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel();
-                            }
-                        });
-
-                        builder.show();
-
+                        String emailS=object
+                                .getString("email");
+                        char[] email = emailS
+                                .toCharArray();
+                        String id=object.getString("id");
+                        String urltoimage="https://graph.facebook.com/"+id+"/picture?type=large";
+                        Toast.makeText(Register.this,first_name+urltoimage,Toast.LENGTH_LONG).show();
+                        String username="";
+                        int j=0;
+                        while(email[j]!='@'){
+                            username+=email[j];
+                            j++;
+                        }
+                        Intent i = new Intent(Register.this, Registration.class);
+                        i.putExtra("Image", urltoimage);
+                        i.putExtra("Username", username);
+                        i.putExtra("Email",emailS);
+                        i.putExtra("Name",first_name+" "+last_name);
+                        SharedPreferences.Editor editor = getSharedPreferences("user_details", MODE_PRIVATE).edit();
+                        editor.putString("Email",emailS);
+                        editor.putString("Username",username);
+                        editor.putString("Image",urltoimage);
+                        editor.putString("Name",first_name+" "+last_name);
+                        editor.apply();
+                        startActivity(i);
+                        finish();
 
                     } catch (JSONException e) {
 

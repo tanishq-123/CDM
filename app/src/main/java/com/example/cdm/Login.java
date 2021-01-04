@@ -82,7 +82,7 @@ public class Login extends AppCompatActivity {
         mAuth=FirebaseAuth.getInstance();
         mTextViewRegister = (TextView)findViewById(R.id.Register);
         callbackManager=CallbackManager.Factory.create();
-        mFblogin.setPermissions(Arrays.asList("email","public_profile"));
+        mFblogin.setReadPermissions(Arrays.asList("email","public_profile"));
         mFblogin.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -99,7 +99,7 @@ public class Login extends AppCompatActivity {
 
             @Override
             public void onCancel() {
-
+                Log.d("FB","Hi1");
             }
 
             @Override
@@ -221,7 +221,6 @@ public class Login extends AppCompatActivity {
         if(currentUser!=null)
         {
             Intent mainIntent = new Intent( Login.this,MainActivity.class);
-
             startActivity(mainIntent);
             finish();
         }
@@ -238,9 +237,11 @@ public class Login extends AppCompatActivity {
             if(currentAccessToken!=null){
                 getuserprofile(currentAccessToken);
             }
+
         }
     };
     public void getuserprofile(AccessToken accessToken){
+
         GraphRequest graphRequest=GraphRequest.newMeRequest(accessToken, new GraphRequest.GraphJSONObjectCallback() {
             @Override
             public void onCompleted(JSONObject object, GraphResponse response) {
