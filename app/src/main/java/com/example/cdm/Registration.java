@@ -21,6 +21,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -50,7 +51,8 @@ import java.util.Locale;
 public class Registration extends AppCompatActivity {
     private EditText mTextPhno;
     private EditText mname;
-    private EditText mUsername,memail;
+    private TextView mUsername;
+    private EditText memail;
     private Button mlocationbtn;
     private Button mButtonRegister;
     String currentuserid;
