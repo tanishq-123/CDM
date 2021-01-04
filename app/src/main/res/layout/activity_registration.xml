@@ -81,7 +81,7 @@
                         android:id="@+id/textInputPassword1"
                         style="@style/parent"
                         android:layout_marginTop="@dimen/loginViewsMargin">
-                        <EditText
+                        <TextView
                             android:id="@+id/uuid"
                             style="@style/modifiedEditText"
                             android:inputType="textEmailAddress"

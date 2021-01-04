@@ -194,13 +194,8 @@ public class Login extends AppCompatActivity {
     private  void verifyuser()
     {
         FirebaseUser user = mAuth.getCurrentUser();
-        char[] user1 = mTextUsername.getText().toString().toCharArray();
-        String username="";
-        int i=0;
-        while(user1[i]!='@'){
-            username+=user1[i];
-            i++;
-        }
+        String username=mTextUsername.getText().toString().replaceAll("[-+.^:,@]","");
+
         emailaddresschecker = user.isEmailVerified();
         if(emailaddresschecker)
         {
@@ -254,7 +249,6 @@ public class Login extends AppCompatActivity {
                 if(error!=null) Toast.makeText(Login.this,error.getErrorMessage().toString(),Toast.LENGTH_LONG).show();
                 else{
                     try {
-
                         final String url = response.getJSONObject()
                                 .getJSONObject("picture")
                                 .getJSONObject("data")
@@ -278,15 +272,10 @@ public class Login extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                    String emailS = input.getText().toString();
-                                    char[] email = emailS
-                                            .toCharArray();
 
-                                    String username="";
-                                    int j=0;
-                                    while(email[j]!='@'){
-                                        username+=email[j];
-                                        j++;
-                                    }
+                                    String username=emailS.replaceAll("[-+.^:,@]","");
+
+
                                     i.putExtra("Username", username);
                                     i.putExtra("Email", emailS);
                                     editor.putString("Email", emailS);
@@ -316,7 +305,6 @@ public class Login extends AppCompatActivity {
 
                     } catch (JSONException e) {
                         Toast.makeText(Login.this,e.getMessage(),Toast.LENGTH_SHORT).show();
-
                         e.printStackTrace();
 
                     }
