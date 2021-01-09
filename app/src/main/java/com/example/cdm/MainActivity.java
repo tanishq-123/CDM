@@ -53,7 +53,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         fab = (FloatingActionButton) findViewById(R.id.fab);
-        userref = FirebaseDatabase.getInstance().getReference().child("User");
+        SharedPreferences pref = getSharedPreferences("user_details", MODE_PRIVATE);
+        String chapter=pref.getString("Chapter",null);
+        Toast.makeText(MainActivity.this,pref.getString("Chapter",null),Toast.LENGTH_SHORT).show();
+
+        userref = FirebaseDatabase.getInstance().getReference().child("User").child(chapter);
         mButtonLogout = (Button)findViewById(R.id.logoutButton);
         mAuth=FirebaseAuth.getInstance();
         mButtonLogout.setOnClickListener(new View.OnClickListener() {
@@ -69,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     LoginManager.getInstance().logOut();
                 }
                 else{
-
                     mAuth.signOut();
                 }
                 startActivity(mintent);
@@ -108,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         else
         {
-            //CheckUserExistence();
+            CheckUserExistence();
         }
         // drivesadapter.startListening();
     }
