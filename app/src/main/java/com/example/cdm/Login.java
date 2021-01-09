@@ -203,7 +203,18 @@ public class Login extends AppCompatActivity {
         final String username=mTextUsername.getText().toString().replaceAll("[-+.^:,@]","");
         SharedPreferences preferences = getSharedPreferences("user_details", MODE_PRIVATE);
         final DatabaseReference chapterref = FirebaseDatabase.getInstance().getReference().child("User").child(preferences.getString("Chapter",null));
-        chapterref.addListenerForSingleValueEvent(new ValueEventListener() {
+       
+        emailaddresschecker = user.isEmailVerified();
+        if(emailaddresschecker)
+        {
+            Toast.makeText(Login.this, "Logged In", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(Login.this,MainActivity.class);
+
+            intent.putExtra("Username",username);
+            SharedPreferences.Editor editor = getSharedPreferences("user_details", MODE_PRIVATE).edit();
+            editor.putString("Username",username);
+            editor.apply();
+            chapterref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if(!snapshot.hasChild(username)){
@@ -223,16 +234,6 @@ public class Login extends AppCompatActivity {
 
             }
         });
-        emailaddresschecker = user.isEmailVerified();
-        if(emailaddresschecker)
-        {
-            Toast.makeText(Login.this, "Logged In", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(Login.this,MainActivity.class);
-
-            intent.putExtra("Username",username);
-            SharedPreferences.Editor editor = getSharedPreferences("user_details", MODE_PRIVATE).edit();
-            editor.putString("Username",username);
-            editor.apply();
             startActivity(intent);
             finish();
         }
