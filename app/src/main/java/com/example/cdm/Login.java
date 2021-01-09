@@ -47,6 +47,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,6 +60,7 @@ import java.lang.reflect.Array;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class Login extends AppCompatActivity {
     EditText mTextUsername;
@@ -82,7 +88,7 @@ public class Login extends AppCompatActivity {
         mAuth=FirebaseAuth.getInstance();
         mTextViewRegister = (TextView)findViewById(R.id.Register);
         callbackManager=CallbackManager.Factory.create();
-        mFblogin.setPermissions(Arrays.asList("email","public_profile"));
+        mFblogin.setReadPermissions(Arrays.asList("email","public_profile"));
         mFblogin.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -99,7 +105,7 @@ public class Login extends AppCompatActivity {
 
             @Override
             public void onCancel() {
-
+                Log.d("FB","Hi1");
             }
 
             @Override
@@ -193,18 +199,41 @@ public class Login extends AppCompatActivity {
     }
     private  void verifyuser()
     {
-        FirebaseUser user = mAuth.getCurrentUser();
-        String username=mTextUsername.getText().toString().replaceAll("[-+.^:,@]","");
-
+        final FirebaseUser user = mAuth.getCurrentUser();
+        final String username=mTextUsername.getText().toString().replaceAll("[-+.^:,@]","");
+        SharedPreferences preferences = getSharedPreferences("user_details", MODE_PRIVATE);
+        final DatabaseReference chapterref = FirebaseDatabase.getInstance().getReference().child("User").child(preferences.getString("Chapter",null));
+       
         emailaddresschecker = user.isEmailVerified();
         if(emailaddresschecker)
         {
             Toast.makeText(Login.this, "Logged In", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(Login.this,MainActivity.class);
+
             intent.putExtra("Username",username);
             SharedPreferences.Editor editor = getSharedPreferences("user_details", MODE_PRIVATE).edit();
             editor.putString("Username",username);
             editor.apply();
+            chapterref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(!snapshot.hasChild(username)){
+                    final HashMap usermap = new HashMap();
+                    usermap.put("Username",username);
+                    chapterref.child(username).setValue(usermap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
             startActivity(intent);
             finish();
         }
@@ -221,7 +250,6 @@ public class Login extends AppCompatActivity {
         if(currentUser!=null)
         {
             Intent mainIntent = new Intent( Login.this,MainActivity.class);
-
             startActivity(mainIntent);
             finish();
         }
@@ -238,9 +266,11 @@ public class Login extends AppCompatActivity {
             if(currentAccessToken!=null){
                 getuserprofile(currentAccessToken);
             }
+
         }
     };
     public void getuserprofile(AccessToken accessToken){
+
         GraphRequest graphRequest=GraphRequest.newMeRequest(accessToken, new GraphRequest.GraphJSONObjectCallback() {
             @Override
             public void onCompleted(JSONObject object, GraphResponse response) {

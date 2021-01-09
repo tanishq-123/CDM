@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -18,6 +19,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -47,13 +49,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class Registration extends AppCompatActivity {
     private EditText mTextPhno;
     private EditText mname;
     private TextView mUsername;
     private EditText memail;
-    private Button mlocationbtn;
     private Button mButtonRegister;
     String currentuserid;
     private FirebaseAuth mAuth;
@@ -62,7 +64,7 @@ public class Registration extends AppCompatActivity {
     private LocationListener locationListener;
     private Location location;
     private Context context;
-    private DatabaseReference userref,tokenref;
+    private DatabaseReference userref,chapterref,tokenref;
     String Chapter;
     public String TOPIC_TO_SUBSCRIBE;
     private ProgressDialog loadingbar;
@@ -80,33 +82,39 @@ public class Registration extends AppCompatActivity {
         mUsername = findViewById(R.id.uuid);
         profile = (CircularImageView) findViewById(R.id.profilepic);
 
-        mlocationbtn = findViewById(R.id.getLoction);
         mButtonRegister = findViewById(R.id.ureg);
         memail = findViewById(R.id.uemail);
+        SharedPreferences pref = getSharedPreferences("user_details", MODE_PRIVATE);
+        final String chapter=pref.getString("Chapter",null);
+        Toast.makeText(Registration.this, image, Toast.LENGTH_SHORT).show();
+        chapterref = FirebaseDatabase.getInstance().getReference().child("User").child(chapter);
 
-        //codePicker = findViewById(R.id.ccp);
         if (extras != null) {
             image = extras.getString("Image");
             Toast.makeText(Registration.this, image, Toast.LENGTH_SHORT).show();
             name=extras.getString("Name");
             username=extras.getString("Username");
-            userref = FirebaseDatabase.getInstance().getReference().child("User").child(username);
+            Log.v("Abc",username);
             email=extras.getString("Email");
             CheckUserExistence(username);
             memail.setText(email);
             mUsername.setText(username);
             mname.setText(name);
-            HashMap <String,String> hashMap = new HashMap<>();
-            hashMap.put("Profile",image);
-            userref.setValue(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Toast.makeText(Registration.this, "Profile Image stored to Firebase Database Successfully...", Toast.LENGTH_SHORT).show();
-                    loadingbar.dismiss();
+            if(image!=null){
+                final HashMap hashMap = new HashMap();
 
-                }
-            });
-            Toast.makeText(Registration.this, image, Toast.LENGTH_SHORT).show();
+                hashMap.put("Image",image);
+                chapterref.child(username).updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(Registration.this, "Profile Image stored to Firebase Database Successfully...", Toast.LENGTH_SHORT).show();
+                        loadingbar.dismiss();
+
+                    }
+                });
+            }
+
+
         }
         mAuth = FirebaseAuth.getInstance();
        // currentuserid = mAuth.getCurrentUser().getUid();
@@ -116,21 +124,6 @@ public class Registration extends AppCompatActivity {
         UserProfileImageRef = FirebaseStorage.getInstance().getReference().child("Profile Images");
         loadingbar = new ProgressDialog(this);
         fusedLocationProviderClient= LocationServices.getFusedLocationProviderClient(this);
-        mlocationbtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(ActivityCompat.checkSelfPermission(Registration.this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED){
-                    Toast.makeText(Registration.this, "Permission granted", Toast.LENGTH_SHORT).show();
-                    getlocation();
-                }
-                else{
-                    ActivityCompat.requestPermissions(Registration.this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},44);
-                    Toast.makeText(Registration.this, "Click get location button again", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-
-        });
         mButtonRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -154,6 +147,7 @@ public class Registration extends AppCompatActivity {
 
                 else
                 {
+                    getlocation();
                     loadingbar.setTitle("Saving User data");
                     loadingbar.setMessage("Please Wait ");
                     loadingbar.show();
@@ -167,13 +161,14 @@ public class Registration extends AppCompatActivity {
                     usermap.put("Email",email);
                     usermap.put("drives",String.valueOf(x));
                     usermap.put("Smiles",String.valueOf(x));
-                    userref.updateChildren(usermap).addOnCompleteListener(new OnCompleteListener() {
+                    chapterref.child(username).updateChildren(usermap).addOnCompleteListener(new OnCompleteListener() {
                         @Override
                         public void onComplete(@NonNull Task task)
                         {
                             if(task.isSuccessful())
                             {
                                 Toast.makeText(Registration.this, "Registration Completed Sucessfully", Toast.LENGTH_SHORT).show();
+                                getlocation();
                                 // mAuth.signOut();
 
                                 Intent movetomain = new Intent(Registration.this,MainActivity.class);
@@ -204,7 +199,7 @@ public class Registration extends AppCompatActivity {
                 startActivityForResult(galleryIntent, Gallery_Pick);
             }
         });
-        userref.addValueEventListener(new ValueEventListener() {
+      chapterref.child(username).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)
             {
@@ -236,7 +231,6 @@ public class Registration extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
-
         if(requestCode==Gallery_Pick && resultCode==RESULT_OK && data!=null)
         {
             Uri ImageUri = data.getData();
@@ -272,14 +266,22 @@ public class Registration extends AppCompatActivity {
                             filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                 @Override
                                 public void onSuccess(Uri uri) {
-                                    HashMap <String,String> hashMap = new HashMap<>();
-                                    hashMap.put("Profile",String.valueOf(uri));
-                                    userref.setValue(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    HashMap hashmap = new HashMap();
+                                    hashmap.put("Profile Img",String.valueOf(uri));
+                                    chapterref.child(username).updateChildren(hashmap).addOnCompleteListener(new OnCompleteListener() {
                                         @Override
-                                        public void onSuccess(Void aVoid) {
-                                            Toast.makeText(Registration.this, "Profile Image stored to Firebase Database Successfully...", Toast.LENGTH_SHORT).show();
-                                            loadingbar.dismiss();
+                                        public void onComplete(@NonNull Task task)
+                                        {
+                                            if(task.isSuccessful())
+                                            {
+                                                Toast.makeText(Registration.this, "Profile image updated", Toast.LENGTH_SHORT).show();
+                                                loadingbar.dismiss();
 
+                                            }
+                                            else
+                                            {
+
+                                            }
                                         }
                                     });
 
@@ -296,8 +298,18 @@ public class Registration extends AppCompatActivity {
             }
         }
     }
-    private void getlocation() {
-        userref = FirebaseDatabase.getInstance().getReference().child("User").child(username);
+    private void getlocation(){
+        if(ActivityCompat.checkSelfPermission(Registration.this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED){
+            Toast.makeText(Registration.this, "Permission granted", Toast.LENGTH_SHORT).show();
+            getuserlocation();
+        }
+        else{
+            ActivityCompat.requestPermissions(Registration.this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},44);
+            getlocation();
+            //Toast.makeText(Registration.this, "Click get location button again", Toast.LENGTH_SHORT).show();
+        }
+    }
+    private void getuserlocation() {
         loadingbar = new ProgressDialog(this);
         fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
             @Override
@@ -317,12 +329,11 @@ public class Registration extends AppCompatActivity {
                         hashMap.put("Address",addresses.get(0).getAddressLine(0));
                         hashMap.put("Chapter",addresses.get(0).getLocality());
                         Chapter=addresses.get(0).getLocality();
-                        userref.updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        chapterref.child(username).updateChildren(hashMap).addOnCompleteListener(new OnCompleteListener() {
                             @Override
-                            public void onSuccess(Void aVoid) {
+                            public void onComplete(@NonNull Task task) {
                                 Toast.makeText(Registration.this, "Location Saved Successfully...", Toast.LENGTH_SHORT).show();
                                 loadingbar.dismiss();
-
                             }
                         });
                     } catch (IOException e) {
@@ -341,12 +352,12 @@ public class Registration extends AppCompatActivity {
 
         Toast.makeText(Registration.this,image,Toast.LENGTH_SHORT).show();
         //  Toast.makeText(MainActivity.this,current_user_id,Toast.LENGTH_SHORT).show();
-        if(userref==null)
+        if(chapterref.child(username)==null)
         {
             Toast.makeText(Registration.this,"Enter Your Data",Toast.LENGTH_SHORT).show();
         }
        else{
-            userref.addValueEventListener(new ValueEventListener() {
+            chapterref.child(username).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot)
                 {
